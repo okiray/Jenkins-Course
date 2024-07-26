@@ -1,0 +1,35 @@
+def remote =[:]
+remote.name='pi'
+remote.host='172.22.203.250'
+remote.allowAnyHosts=true
+
+pipeline {
+    agent any
+
+    environment {
+        PI_CREDS=credentials('sshYeniTasarimPassword')
+        def anaDizin = "/home/admin/web/app.bulutklinik.com/"
+        def tarih = "/home/admin/web/app.bulutklinik.com/"
+    }
+
+    stages{
+        stage("SSH baglan") {
+            steps {
+                script{
+                   remote.user=env.PI_CREDS_USR
+                   remote.password=env.PI_CREDS_PSW
+                   def now = new Date()
+                   tarih = now.format("yyMMdd_HHmm", TimeZone.getTimeZone('UTC'))
+
+                } 
+                sshCommand(remote: remote,command:"cd ${anaDizin} && git branch ${tarih} && git pull")
+                
+            }
+        }
+    }
+    post{
+        always{
+            sleep 5
+        }
+    }
+}
